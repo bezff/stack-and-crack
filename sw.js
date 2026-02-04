@@ -6,7 +6,7 @@
 // ====================================
 // Версионирование
 // ====================================
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '2.0.0';
 const CACHE_NAME = `stack-crack-v${APP_VERSION}`;
 
 const ASSETS_TO_CACHE = [
@@ -17,7 +17,17 @@ const ASSETS_TO_CACHE = [
     './effects.js',
     './version.js',
     './manifest.json',
-    './assets/icon.svg'
+    './privacy.html',
+    './assets/logo.svg',
+    './assets/logo.png',
+    './assets/icon-72.png',
+    './assets/icon-96.png',
+    './assets/icon-128.png',
+    './assets/icon-144.png',
+    './assets/icon-152.png',
+    './assets/icon-192.png',
+    './assets/icon-384.png',
+    './assets/icon-512.png'
 ];
 
 // ====================================
