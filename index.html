@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0A0A0F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Stack & Crack - Хакерская головоломка">
+    
+    <title>Stack & Crack</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="splash-screen">
+        <div class="splash-content">
+            <img src="assets/logo.svg" alt="Swipe Studio" class="studio-logo">
+            <div class="studio-name">SWIPE STUDIO</div>
+            <div class="splash-loader">
+                <div class="splash-loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="hidden">
+        <!-- Canvas для эффектов частиц -->
+        <canvas id="effects-canvas"></canvas>
+        
+        <!-- Верхняя панель -->
+        <header id="top-panel">
+            <div class="score-container">
+                <span class="label">SCORE</span>
+                <span id="score">0</span>
+            </div>
+            <div id="multiplier-container" class="hidden">
+                <span id="multiplier">x2</span>
+            </div>
+            <div class="level-info" style="display: none;">
+                <span class="label">LVL</span>
+                <span id="level-display">1</span>
+                <div class="level-progress">
+                    <div class="level-progress-bar" id="level-progress-bar"></div>
+                </div>
+            </div>
+            <div class="timer-info hidden" id="timer-container">
+                <span class="label">TIME</span>
+                <span id="game-timer">60</span>
+            </div>
+            <div class="target-info hidden" id="target-container">
+                <span class="label">TARGET</span>
+                <span id="target-score">1000</span>
+            </div>
+            <!-- AI панель для Versus режима -->
+            <div class="ai-panel hidden" id="ai-panel">
+                <div class="ai-avatar" id="ai-avatar">🤖</div>
+                <div class="ai-info">
+                    <span class="ai-label">AI</span>
+                    <span class="ai-score" id="ai-score">0</span>
+                </div>
+                <span class="ai-status" id="ai-status">🤔 Думает...</span>
+            </div>
+<button id="pause-btn" aria-label="Пауза">⏸</button>
+        </header>
+
+        <!-- Игровое поле -->
+        <main id="game-field">
+            <!-- Левая колонка -->
+            <div class="column" id="column-left">
+                <div class="blocks-container" id="blocks-left"></div>
+                <div class="sum-display">
+                    <span class="sum-label">SUM:</span>
+                    <span class="sum-value" id="sum-left">0</span>
+                </div>
+                <div class="wall" id="wall-left">
+                    <span class="wall-value">7</span>
+                    <div class="wall-cracks"></div>
+                </div>
+                <div class="overheat-timer hidden" id="timer-left">3</div>
+            </div>
+
+            <!-- Разделитель -->
+            <div class="divider"></div>
+
+            <!-- Правая колонка -->
+            <div class="column" id="column-right">
+                <div class="blocks-container" id="blocks-right"></div>
+                <div class="sum-display">
+                    <span class="sum-label">SUM:</span>
+                    <span class="sum-value" id="sum-right">0</span>
+                </div>
+                <div class="wall" id="wall-right">
+                    <span class="wall-value">5</span>
+                    <div class="wall-cracks"></div>
+                </div>
+                <div class="overheat-timer hidden" id="timer-right">3</div>
+            </div>
+        </main>
+
+        <!-- Падающий блок -->
+        <div id="falling-block" class="block hidden">
+            <span class="block-value">5</span>
+        </div>
+
+        <!-- Нижняя панель управления -->
+        <footer id="controls">
+            <button class="control-btn" id="btn-left" aria-label="Левая колонка">
+                <span class="arrow">←</span>
+            </button>
+            <div class="next-block-container">
+                <span class="next-label">NEXT</span>
+                <div class="block-queue">
+                    <div class="next-block" id="next-block">
+                        <span class="block-value">3</span>
+                    </div>
+                    <div class="preview-block" id="preview-block-1">
+                        <span class="block-value">?</span>
+                    </div>
+                    <div class="preview-block" id="preview-block-2">
+                        <span class="block-value">?</span>
+                    </div>
+                </div>
+            </div>
+            <button class="control-btn" id="btn-right" aria-label="Правая колонка">
+                <span class="arrow">→</span>
+            </button>
+        </footer>
+        
+        <!-- Индикатор комбо -->
+        <div id="combo-indicator" class="hidden">
+            <span class="combo-count">x0</span>
+            <span class="combo-label">COMBO</span>
+        </div>
+        
+        <!-- Контейнер для floating text -->
+        <div id="floating-text-container"></div>
+
+        <!-- Вспышка экрана -->
+        <div id="screen-flash"></div>
+        
+        <!-- Уведомление о двойном взломе -->
+        <div id="dual-hack-notification" class="hidden">
+            <span class="dual-text">DUAL HACK!</span>
+            <span class="dual-multiplier">x2</span>
+        </div>
+    </div>
+
+    <!-- Экран паузы -->
+    <div id="pause-screen" class="overlay hidden">
+        <button class="overlay-settings-btn" id="pause-settings-btn" aria-label="Настройки">⚙</button>
+        <div class="overlay-content">
+            <h2>ПАУЗА</h2>
+            <button class="menu-btn" id="resume-btn">ПРОДОЛЖИТЬ</button>
+            <button class="menu-btn" id="restart-btn">НАЧАТЬ ЗАНОВО</button>
+            <button class="menu-btn secondary-btn" id="main-menu-btn">НА ГЛАВНУЮ</button>
+            <div class="high-score">
+                <span>РЕКОРД:</span>
+                <span id="high-score">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно настроек -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙ НАСТРОЙКИ</h2>
+                <button class="modal-close" id="settings-close-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h3>УПРАВЛЕНИЕ</h3>
+                    <label class="toggle-setting">
+                        <span>Свайпы</span>
+                        <input type="checkbox" id="swipe-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-group">
+                    <h3>ЭФФЕКТЫ</h3>
+                    <label class="toggle-setting">
+                        <span>Вибрация</span>
+                        <input type="checkbox" id="haptic-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label class="toggle-setting">
+                        <span>Звук</span>
+                        <input type="checkbox" id="sound-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label class="toggle-setting">
+                        <span>Музыка</span>
+                        <input type="checkbox" id="music-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-group">
+                    <h3>УВЕДОМЛЕНИЯ</h3>
+                    <label class="toggle-setting">
+                        <span>Напоминания</span>
+                        <input type="checkbox" id="notifications-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-group">
+                    <h3>ДОСТУПНОСТЬ</h3>
+                    <label class="toggle-setting">
+                        <span>Режим для дальтоников</span>
+                        <input type="checkbox" id="colorblind-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label class="toggle-setting">
+                        <span>Крупные кнопки</span>
+                        <input type="checkbox" id="large-controls-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label class="toggle-setting">
+                        <span>Без анимаций</span>
+                        <input type="checkbox" id="reduced-motion-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="menu-btn" id="settings-save-btn">ГОТОВО</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно магазина -->
+    <div id="shop-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content shop-content">
+            <div class="modal-header">
+                <h2>🎨 ТЕМЫ</h2>
+                <button class="modal-close" id="shop-close-btn">✕</button>
+            </div>
+            
+            <!-- Информация о профиле -->
+            <div class="shop-profile">
+                <div class="profile-level">
+                    <span class="profile-label">УРОВЕНЬ</span>
+                    <span class="profile-value" id="shop-level">1</span>
+                </div>
+                <div class="profile-cracks">
+                    <span class="profile-label">ВЗЛОМОВ</span>
+                    <span class="profile-value" id="shop-total-cracks">0</span>
+                </div>
+            </div>
+            
+            <!-- Сетка тем -->
+            <div class="themes-grid">
+                <div class="theme-card unlocked active" data-theme="neon-city">
+                    <div class="theme-preview neon-city-preview"></div>
+                    <div class="theme-info">
+                        <span class="theme-name">NEON CITY</span>
+                        <span class="theme-status">✓ Активна</span>
+                    </div>
+                </div>
+                <div class="theme-card locked" data-theme="matrix">
+                    <div class="theme-preview matrix-preview"></div>
+                    <div class="theme-info">
+                        <span class="theme-name">MATRIX</span>
+                        <span class="theme-unlock">🔒 100 взломов</span>
+                    </div>
+                </div>
+                <div class="theme-card locked" data-theme="synthwave">
+                    <div class="theme-preview synthwave-preview"></div>
+                    <div class="theme-info">
+                        <span class="theme-name">SYNTHWAVE</span>
+                        <span class="theme-unlock">🔒 Уровень 5</span>
+                    </div>
+                </div>
+                <div class="theme-card locked" data-theme="minimal">
+                    <div class="theme-preview minimal-preview"></div>
+                    <div class="theme-info">
+                        <span class="theme-name">MINIMAL</span>
+                        <span class="theme-unlock">🔒 10 DUAL HACK</span>
+                    </div>
+                </div>
+                <div class="theme-card locked" data-theme="terminal">
+                    <div class="theme-preview terminal-preview"></div>
+                    <div class="theme-info">
+                        <span class="theme-name">TERMINAL</span>
+                        <span class="theme-unlock">🔒 Уровень 10</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="menu-btn" id="shop-close-footer-btn">ЗАКРЫТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно достижений -->
+    <div id="achievements-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content achievements-content">
+            <div class="modal-header">
+                <h2>🏆 ДОСТИЖЕНИЯ</h2>
+                <button class="modal-close" id="achievements-close-btn">✕</button>
+            </div>
+            
+            <!-- Статистика -->
+            <div class="achievements-stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="achievements-unlocked">0</span>
+                    <span class="stat-label">Разблокировано</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="achievements-total">10</span>
+                    <span class="stat-label">Всего</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="player-level-display">1</span>
+                    <span class="stat-label">Уровень</span>
+                </div>
+            </div>
+            
+            <!-- Прогресс до следующего уровня -->
+            <div class="level-progress-container">
+                <div class="level-progress-info">
+                    <span>До уровня <span id="next-level">2</span></span>
+                    <span id="cracks-to-next">10 взломов</span>
+                </div>
+                <div class="level-progress-bar-container">
+                    <div class="level-progress-bar-fill" id="level-progress-fill"></div>
+                </div>
+            </div>
+            
+            <!-- Сетка достижений -->
+            <div class="achievements-grid" id="achievements-grid">
+                <!-- Достижения будут добавлены через JS -->
+            </div>
+            
+            <div class="modal-footer">
+                <button class="menu-btn" id="achievements-close-footer-btn">ЗАКРЫТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран окончания игры -->
+    <div id="game-over-screen" class="overlay hidden">
+        <div class="overlay-content">
+            <h2 class="game-over-title">GAME OVER</h2>
+            <div id="versus-result" class="versus-result hidden"></div>
+            <div class="final-score">
+                <span>СЧЁТ:</span>
+                <span id="final-score">0</span>
+            </div>
+            <div id="versus-score-container" class="versus-score-container hidden">
+                <span>AI:</span>
+                <span id="versus-ai-score">0</span>
+            </div>
+            <div class="high-score">
+                <span>РЕКОРД:</span>
+                <span id="final-high-score">0</span>
+            </div>
+            <span id="new-record" class="hidden">НОВЫЙ РЕКОРД!</span>
+            <button class="menu-btn" id="play-again-btn">ИГРАТЬ СНОВА</button>
+            <button class="menu-btn share-btn" id="share-btn">📤 ПОДЕЛИТЬСЯ</button>
+        </div>
+    </div>
+
+    <!-- Стартовый экран -->
+    <div id="start-screen" class="overlay">
+        <div class="overlay-buttons-left">
+            <button class="overlay-btn-icon" id="start-settings-btn" aria-label="Настройки">⚙</button>
+            <button class="overlay-btn-icon" id="start-shop-btn" aria-label="Магазин">🛒</button>
+            <button class="overlay-btn-icon" id="start-achievements-btn" aria-label="Достижения">🏆</button>
+        </div>
+        <div class="overlay-content">
+            <h1 class="game-title">
+                <span class="title-stack">STACK</span>
+                <span class="title-amp">&</span>
+                <span class="title-crack">CRACK</span>
+            </h1>
+            <p class="game-subtitle">Хакерская головоломка</p>
+            <button class="menu-btn start-btn" id="start-btn">НАЧАТЬ ИГРУ</button>
+            <div class="instructions">
+                <p>Собирай сумму цифр для взлома стен</p>
+                <p>← Тап/Свайп влево | Тап/Свайп вправо →</p>
+            </div>
+            <div class="high-score">
+                <span>РЕКОРД:</span>
+                <span id="start-high-score">0</span>
+            </div>
+            <div class="version-info" id="version-display">v1.1.0</div>
+        </div>
+    </div>
+
+    <!-- Экран выбора режима -->
+    <div id="mode-screen" class="overlay hidden">
+        <div class="overlay-content mode-content">
+            <h2>ВЫБЕРИ РЕЖИМ</h2>
+            <div class="mode-options">
+                <button class="mode-btn" data-mode="classic">
+                    <span class="mode-icon">🎮</span>
+                    <span class="mode-name">КЛАССИКА</span>
+                    <span class="mode-desc">Стандартный режим</span>
+                </button>
+                <button class="mode-btn" data-mode="timeAttack">
+                    <span class="mode-icon">⏱️</span>
+                    <span class="mode-name">НА ВРЕМЯ</span>
+                    <span class="mode-desc">60 секунд на максимум</span>
+                </button>
+                <button class="mode-btn" data-mode="zen">
+                    <span class="mode-icon">🧘</span>
+                    <span class="mode-name">ДЗЕН</span>
+                    <span class="mode-desc">Без перегрева</span>
+                </button>
+                <button class="mode-btn challenge" data-mode="challenge">
+                    <span class="mode-icon">🎯</span>
+                    <span class="mode-name">ИСПЫТАНИЕ</span>
+                    <span class="mode-desc" id="challenge-desc">Ежедневный вызов</span>
+                </button>
+                <button class="mode-btn versus" data-mode="versus">
+                    <span class="mode-icon">🤖</span>
+                    <span class="mode-name">ПРОТИВ ИИ</span>
+                    <span class="mode-desc">Победи бота!</span>
+                </button>
+            </div>
+            <button class="menu-btn secondary-btn" id="mode-back-btn">НАЗАД</button>
+        </div>
+    </div>
+
+    <!-- Экран выбора сложности -->
+    <div id="difficulty-screen" class="overlay hidden">
+        <div class="overlay-content difficulty-content">
+            <h2>ВЫБЕРИ СЛОЖНОСТЬ</h2>
+            <div class="difficulty-options">
+                <button class="difficulty-btn" data-difficulty="easy">
+                    <span class="diff-name">🟢 ЛЁГКИЙ</span>
+                    <span class="diff-desc">Для новичков</span>
+                </button>
+                <button class="difficulty-btn" data-difficulty="normal">
+                    <span class="diff-name">🟡 НОРМАЛЬНЫЙ</span>
+                    <span class="diff-desc">Стандартный режим</span>
+                </button>
+                <button class="difficulty-btn" data-difficulty="hard">
+                    <span class="diff-name">🔴 СЛОЖНЫЙ</span>
+                    <span class="diff-desc">Для профи</span>
+                </button>
+                <button class="difficulty-btn endless" data-difficulty="endless">
+                    <span class="diff-name">♾️ БЕСКОНЕЧНЫЙ</span>
+                    <span class="diff-desc">Сложность растёт!</span>
+                </button>
+            </div>
+            <button class="menu-btn secondary-btn" id="difficulty-back-btn">НАЗАД</button>
+        </div>
+    </div>
+
+    <!-- Уведомление об обновлении -->
+    <div id="update-notification" class="update-banner hidden">
+        <div class="update-content">
+            <span class="update-icon">🔄</span>
+            <span class="update-text">Доступна новая версия!</span>
+        </div>
+        <button class="update-btn" id="update-btn">ОБНОВИТЬ</button>
+        <button class="update-close" id="update-close">✕</button>
+    </div>
+
+    <script src="version.js"></script>
+    <script src="effects.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
