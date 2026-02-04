@@ -1,4 +1,5 @@
 {
+    "id": "stack-and-crack",
     "name": "Stack & Crack",
     "short_name": "Stack&Crack",
     "description": "Хакерская головоломка - складывай цифры, взламывай стены!",
@@ -64,25 +65,25 @@
     "screenshots": [
         {
             "src": "assets/screenshot-1.png",
-            "sizes": "430x932",
+            "sizes": "1290x2796",
             "type": "image/png",
             "form_factor": "narrow"
         },
         {
             "src": "assets/screenshot-2.png",
-            "sizes": "430x932",
+            "sizes": "1290x2796",
             "type": "image/png",
             "form_factor": "narrow"
         },
         {
             "src": "assets/screenshot-3.png",
-            "sizes": "430x932",
+            "sizes": "1290x2796",
             "type": "image/png",
             "form_factor": "narrow"
         },
         {
             "src": "assets/screenshot-4.png",
-            "sizes": "430x932",
+            "sizes": "1290x2796",
             "type": "image/png",
             "form_factor": "narrow"
         }

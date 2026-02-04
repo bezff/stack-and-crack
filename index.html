@@ -475,5 +475,10 @@
     <script src="version.js"></script>
     <script src="effects.js"></script>
     <script src="game.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
+        }
+    </script>
 </body>
 </html>
