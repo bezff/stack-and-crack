@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.bezff.stackandcrack",
+    "sha256_cert_fingerprints": ["A3:D6:20:5F:61:89:4A:BB:09:2A:4E:1A:2F:22:5C:92:53:98:89:BD:6B:FD:9E:9B:1F:DC:5D:B6:BF:E1:AA:DB"]
+  }
+}]
